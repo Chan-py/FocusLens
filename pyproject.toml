@@ -1,0 +1,27 @@
+[project]
+name = "focuslens-proto"
+version = "0.1.0"
+description = "Real-time concentration tracker with on-device LLM reporting"
+# mediapipe 0.10.21+ removed mp.solutions; <3.13 keeps us on a compatible wheel
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "opencv-python>=4.8",
+    "mediapipe>=0.10,<0.10.21",
+    "numpy>=1.24",
+    "python-dotenv>=1.2.2",
+    "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+# pip install -e ".[cloud]"   → OpenAI backend
+# pip install -e ".[local]"   → llama.cpp on-device SLM
+cloud = ["openai>=1.0"]
+local = ["llama-cpp-python"]
+
+[tool.uv]
+package = false   # scripts-only project; no wheel build needed
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
