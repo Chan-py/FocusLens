@@ -1,7 +1,7 @@
 """Gaze direction detection — Wang et al. (2025).
 
 Pipeline per eye:
-  grayscale crop → GaussianBlur → medianBlur → binary threshold (THRESH_BINARY_INV)
+  grayscale crop → GaussianBlur → medianBlur → Otsu binary threshold (THRESH_BINARY_INV)
   → split into thirds → dark-pixel count → left / center / right
 
 Fusion: if both eyes agree → that direction; else → "off-center" (distracted).
@@ -9,7 +9,7 @@ Fusion: if both eyes agree → that direction; else → "off-center" (distracted
 
 import cv2
 import numpy as np
-from config import GAZE_BINARIZE_THRESHOLD, RIGHT_EYE_IDS, LEFT_EYE_IDS
+from config import RIGHT_EYE_IDS, LEFT_EYE_IDS
 from models import GazePosition
 
 
@@ -35,7 +35,7 @@ def _iris_position(eye_crop: np.ndarray) -> GazePosition:
     if eye_crop is None or eye_crop.size == 0:
         return GazePosition.UNKNOWN
     blurred = cv2.medianBlur(cv2.GaussianBlur(eye_crop, (5, 5), 0), 3)
-    _, binary = cv2.threshold(blurred, GAZE_BINARIZE_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     _, crop_w = binary.shape
     if crop_w < 3:
         return GazePosition.UNKNOWN

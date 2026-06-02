@@ -37,6 +37,3 @@ FACE_2D_LANDMARK_IDS: list[int] = [1, 152, 263, 33, 287, 57]
 # ── Eye landmark ids (shared by EAR and gaze) ────────────────────────────────
 RIGHT_EYE_IDS: list[int] = [33, 133, 160, 159, 158, 144, 145, 153]
 LEFT_EYE_IDS:  list[int] = [362, 263, 387, 386, 385, 373, 374, 380]
-
-# ── Gaze detection ────────────────────────────────────────────────────────────
-GAZE_BINARIZE_THRESHOLD: int = 50   # pixel intensity cutoff for iris binarization

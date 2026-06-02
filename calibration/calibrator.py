@@ -61,6 +61,10 @@ def compute_calibration(
         study_pitches = [f.pitch for f in study_frames if f.pitch is not None]
         if study_pitches:
             pitch_baseline = float(np.mean(study_pitches))
+        # EAR is foreshortened when head is tilted — use study-posture EAR as baseline
+        study_ears = [f.ear for f in study_frames if f.ear is not None and f.ear > 0]
+        if study_ears:
+            ear_baseline = float(np.mean(study_ears))
 
     # focus_gaze: not yet collected; see _doc/todo_unimplemented.md §1
     focus_gaze: GazePosition | None = None

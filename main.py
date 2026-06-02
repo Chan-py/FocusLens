@@ -62,9 +62,9 @@ LLM_MODE       = "slm"                     # "openai" | "slm" | "stub"
 OPENAI_KEY     = os.getenv("OPENAI_API_KEY", "")
 SLM_MODEL_PATH: str | None = "models/qwen2.5-3b-instruct-q4_k_m.gguf"
 
-# SESSION: SessionMode = LiveMode()
+SESSION: SessionMode = LiveMode()
 # SESSION: SessionMode = RecordMode("runs/test_01")
-SESSION: SessionMode = ReplayMode("runs/test_01")
+# SESSION: SessionMode = ReplayMode("runs/test_01")
 
 LOG_INTERVAL = 30   # terminal log row every N frames
 
