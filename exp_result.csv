@@ -10,3 +10,10 @@ timestamp,llm_mode,model_path,elapsed_sec,completion_tokens,tokens_per_sec,memor
 2026-06-02 20:23:11,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
 2026-06-02 20:27:39,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
 2026-06-02 20:30:37,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 20:45:59,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 20:56:44,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 21:04:34,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 21:13:41,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,,,,,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 21:17:18,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,14.9,216,14.5,2345.5,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 21:22:13,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,15.69,253,16.12,2681.0,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt
+2026-06-02 21:32:01,slm,models/qwen2.5-3b-instruct-q4_k_m.gguf,14.81,279,18.84,3723.3,slm_qwen2.5-3b-instruct-q4_k_m_focus_report.txt

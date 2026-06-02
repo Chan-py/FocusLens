@@ -38,7 +38,7 @@ def compute_summary(
     if not drut:
         return _empty_summary(state, intent, cal)
 
-    session_min = (time.time() - state.session_start) / 60
+    session_min = state.session_elapsed_sec / 60
     focus_thr   = DRUT_FOCUS_THRESHOLD
 
     # ── effective focus ratio ─────────────────────────────────────────────────
@@ -166,7 +166,7 @@ def _empty_summary(
 ) -> SessionSummary:
     return SessionSummary(
         scenario=intent.scenario,
-        session_duration_min=round((time.time() - state.session_start) / 60, 1),
+        session_duration_min=round(state.session_elapsed_sec / 60, 1),
         effective_focus_ratio=0.0,
         total_blinks=state.total_blinks,
         golden_hour=None,

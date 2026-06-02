@@ -63,8 +63,8 @@ OPENAI_KEY     = os.getenv("OPENAI_API_KEY", "")
 SLM_MODEL_PATH: str | None = "models/qwen2.5-3b-instruct-q4_k_m.gguf"
 
 # SESSION: SessionMode = LiveMode()
-SESSION: SessionMode = RecordMode("runs/test_01")
-# SESSION: SessionMode = ReplayMode("runs/test_01")
+# SESSION: SessionMode = RecordMode("runs/seungchan_paper")
+SESSION: SessionMode = ReplayMode("runs/seungchan_book")
 
 LOG_INTERVAL = 10   # terminal log row every N frames
 
@@ -154,7 +154,7 @@ def main() -> None:
     # ── Step 2: thresholds + session objects ──────────────────────────────────
     thresholds = derive_thresholds(intent, cal)
     ear        = EarTracker(thresholds)
-    state      = SessionState(thresholds)
+    state      = SessionState(thresholds, replay_fps=30.0 if isinstance(SESSION, ReplayMode) else None)
     if isinstance(detector, RecordingDetector):
         detector.set_context(thresholds, ear)
     debug_log: list[dict] = []
@@ -218,7 +218,8 @@ def main() -> None:
     report   = reporter.report(summary)
 
     report_fname = _report_filename()
-    _save_outputs(out_dir, debug_log, summary, report, report_fname)
+    _save_outputs(out_dir, debug_log, summary, report, report_fname,
+                  overwrite=not isinstance(SESSION, ReplayMode))
     _save_exp_result(reporter, report_fname)
     _print_session_summary(debug_log, summary, report, out_dir, report_fname)
 
@@ -256,13 +257,15 @@ def _report_filename() -> str:
     return "stub_focus_report.txt"
 
 
-def _save_outputs(out_dir: Path, debug_log: list[dict], summary, report: str, report_fname: str) -> None:
-    (out_dir / "debug_log.json").write_text(
-        json.dumps(debug_log, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-    (out_dir / "session_summary.json").write_text(
-        json.dumps(summary_to_dict(summary), indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+def _save_outputs(out_dir: Path, debug_log: list[dict], summary, report: str, report_fname: str,
+                  overwrite: bool = True) -> None:
+    if overwrite:
+        (out_dir / "debug_log.json").write_text(
+            json.dumps(debug_log, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        (out_dir / "session_summary.json").write_text(
+            json.dumps(summary_to_dict(summary), indent=2, ensure_ascii=False), encoding="utf-8"
+        )
     (out_dir / report_fname).write_text(report, encoding="utf-8")
 
 

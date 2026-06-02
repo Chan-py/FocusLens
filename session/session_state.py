@@ -16,8 +16,9 @@ from models import DetectionThresholds, DistractionReason, DistractionResult
 
 
 class SessionState:
-    def __init__(self, thresholds: DetectionThresholds) -> None:
+    def __init__(self, thresholds: DetectionThresholds, replay_fps: float | None = None) -> None:
         self._unit_frames: int = thresholds.drut_unit_frames
+        self._replay_fps: float | None = replay_fps
         self.session_start: float = time.time()
 
         # per-unit accumulators (reset in close_unit)
@@ -40,6 +41,12 @@ class SessionState:
     def total_frames(self) -> int:
         return self._total_frames
 
+    @property
+    def session_elapsed_sec(self) -> float:
+        if self._replay_fps is not None:
+            return self._total_frames / self._replay_fps
+        return time.time() - self.session_start
+
     def update(self, result: DistractionResult, total_blinks: int) -> bool:
         """Ingest one frame. Returns True when a unit boundary is reached.
 
@@ -61,7 +68,10 @@ class SessionState:
         reset is explicit in the orchestration layer.
         """
         drut    = self._d_count / self._frame_count
-        elapsed = time.time() - self.session_start
+        if self._replay_fps is not None:
+            elapsed = self._total_frames / self._replay_fps
+        else:
+            elapsed = time.time() - self.session_start
 
         self.drut_history.append(drut)
         self.timestamps.append(elapsed)
