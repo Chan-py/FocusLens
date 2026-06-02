@@ -66,7 +66,7 @@ SLM_MODEL_PATH: str | None = "models/qwen2.5-3b-instruct-q4_k_m.gguf"
 SESSION: SessionMode = RecordMode("runs/test_01")
 # SESSION: SessionMode = ReplayMode("runs/test_01")
 
-LOG_INTERVAL = 30   # terminal log row every N frames
+LOG_INTERVAL = 10   # terminal log row every N frames
 
 
 # ── factories ─────────────────────────────────────────────────────────────────
