@@ -64,24 +64,29 @@ def assess_distraction(
     thresholds:  DetectionThresholds,
     ear_dynamic: float,
 ) -> DistractionResult:
-    def _result(reason: DistractionReason) -> DistractionResult:
-        return DistractionResult(reason=reason, features=features)
-
     if not features.face_detected:
-        return _result(DistractionReason.NO_FACE)
+        r = DistractionReason.NO_FACE
+        return DistractionResult(reason=r, features=features, reasons=frozenset({r}))
+
+    violations: set[DistractionReason] = set()
 
     if features.pitch is not None and features.yaw is not None:
         if (abs(features.yaw - thresholds.yaw_baseline) > thresholds.yaw_threshold
                 or features.pitch > thresholds.pitch_max
                 or features.pitch < thresholds.pitch_min):
-            return _result(DistractionReason.HEAD_DEVIATION)
+            violations.add(DistractionReason.HEAD_DEVIATION)
 
     if features.ear is not None and features.ear < ear_dynamic:
-        return _result(DistractionReason.EYES_CLOSED)
+        violations.add(DistractionReason.EYES_CLOSED)
 
     if (features.gaze is not None
             and features.gaze is not GazePosition.UNKNOWN
             and features.gaze not in thresholds.allowed_gazes):
-        return _result(DistractionReason.GAZE_DEVIATION)
+        violations.add(DistractionReason.GAZE_DEVIATION)
 
-    return _result(DistractionReason.NONE)
+    if not violations:
+        return DistractionResult(reason=DistractionReason.NONE, features=features)
+
+    _priority = [DistractionReason.HEAD_DEVIATION, DistractionReason.EYES_CLOSED, DistractionReason.GAZE_DEVIATION]
+    primary = next(r for r in _priority if r in violations)
+    return DistractionResult(reason=primary, features=features, reasons=frozenset(violations))

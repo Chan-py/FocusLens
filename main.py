@@ -62,8 +62,8 @@ LLM_MODE       = "slm"                     # "openai" | "slm" | "stub"
 OPENAI_KEY     = os.getenv("OPENAI_API_KEY", "")
 SLM_MODEL_PATH: str | None = "models/qwen2.5-3b-instruct-q4_k_m.gguf"
 
-SESSION: SessionMode = LiveMode()
-# SESSION: SessionMode = RecordMode("runs/test_01")
+# SESSION: SessionMode = LiveMode()
+SESSION: SessionMode = RecordMode("runs/test_01")
 # SESSION: SessionMode = ReplayMode("runs/test_01")
 
 LOG_INTERVAL = 30   # terminal log row every N frames
@@ -115,9 +115,12 @@ def _make_capture_and_detector(
                     run_dir = Path(p)
                     run_dir.mkdir(parents=True, exist_ok=True)
                     detector = RecordingDetector(
-                        detector, JsonlFeatureStore(run_dir / "features.jsonl")
+                        detector,
+                        JsonlFeatureStore(run_dir / "features.jsonl"),
+                        frames_dir=run_dir / "frames",
                     )
                     print(f"[record] FrameFeatures → {run_dir / 'features.jsonl'}")
+                    print(f"[record] frames       → {run_dir / 'frames'}")
             return cap, detector, None
 
 
@@ -152,6 +155,8 @@ def main() -> None:
     thresholds = derive_thresholds(intent, cal)
     ear        = EarTracker(thresholds)
     state      = SessionState(thresholds)
+    if isinstance(detector, RecordingDetector):
+        detector.set_context(thresholds, ear)
     debug_log: list[dict] = []
 
     _print_session_header(intent, thresholds)
@@ -312,16 +317,17 @@ def _log_row(
     gaze_s  = f.gaze.value     if f.gaze  is not None else "  N/A"
     yaw_s   = f"{f.yaw:.1f}"  if f.yaw   is not None else "  N/A"
     pitch_s = f"{f.pitch:.1f}" if f.pitch is not None else "  N/A"
-    reason  = result.reason.value
+    reasons = "+".join(r.value for r in result.reasons) if result.reasons else "none"
 
     print(f"{elapsed:>6} | {ear_s:>6} | {ear.threshold:.3f} | {gaze_s:>10} | "
-          f"{yaw_s:>6} | {pitch_s:>6} | {reason}")
+          f"{yaw_s:>6} | {pitch_s:>6} | {reasons}")
 
     log_entry = dataclasses.asdict(f)
     log_entry["gaze"]      = gaze_s
     log_entry["time_s"]    = elapsed
     log_entry["ear_thr"]   = ear.threshold
-    log_entry["reason"]    = reason
+    log_entry["reason"]    = result.reason.value
+    log_entry["reasons"]   = reasons
     log_entry["distracted"] = result.distracted
     debug_log.append(log_entry)
 

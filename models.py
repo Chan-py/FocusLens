@@ -5,7 +5,7 @@ between modules and in what direction.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -99,6 +99,7 @@ class DistractionReason(Enum):
 class DistractionResult:
     reason:   DistractionReason
     features: FrameFeatures
+    reasons:  frozenset[DistractionReason] = field(default_factory=frozenset)
 
     @property
     def distracted(self) -> bool:

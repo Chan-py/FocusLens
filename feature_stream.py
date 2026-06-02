@@ -29,12 +29,15 @@ from __future__ import annotations
 import dataclasses
 import json
 from pathlib import Path
-from typing import Iterable, Iterator
+from typing import TYPE_CHECKING, Iterable, Iterator
 
 import numpy as np
 
 from features.detector import FaceDetector
-from models import CalibrationData, FrameFeatures, GazePosition, Scenario, UserIntent
+from models import CalibrationData, DetectionThresholds, FrameFeatures, GazePosition, Scenario, UserIntent
+
+if TYPE_CHECKING:
+    from session import EarTracker
 
 
 # ── serialisation helpers ─────────────────────────────────────────────────────
@@ -70,9 +73,12 @@ class JsonlFeatureStore:
     def __init__(self, path: str | Path) -> None:
         self._path = Path(path)
 
-    def write(self, features: FrameFeatures) -> None:
+    def write(self, features: FrameFeatures, extra: dict | None = None) -> None:
+        d = _features_to_dict(features)
+        if extra:
+            d.update(extra)
         with self._path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(_features_to_dict(features), ensure_ascii=False) + "\n")
+            f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
     def __iter__(self) -> Iterator[FrameFeatures]:
         with self._path.open(encoding="utf-8") as f:
@@ -132,13 +138,42 @@ _NO_FACE = FrameFeatures(
 class RecordingDetector(FaceDetector):
     """Transparent wrapper: detects normally and records each FrameFeatures."""
 
-    def __init__(self, inner: FaceDetector, store: JsonlFeatureStore) -> None:
-        self._inner = inner
-        self._store = store
+    def __init__(
+        self,
+        inner: FaceDetector,
+        store: JsonlFeatureStore,
+        frames_dir: Path | None = None,
+    ) -> None:
+        self._inner      = inner
+        self._store      = store
+        self._frames_dir = frames_dir
+        self._idx        = 0
+        self._thresholds: DetectionThresholds | None = None
+        self._ear: EarTracker | None = None
+        if frames_dir is not None:
+            frames_dir.mkdir(parents=True, exist_ok=True)
+
+    def set_context(self, thresholds: DetectionThresholds, ear: EarTracker) -> None:
+        """Call after calibration so distraction reason is included in each record."""
+        self._thresholds = thresholds
+        self._ear        = ear
 
     def detect(self, frame: np.ndarray) -> FrameFeatures:
+        import cv2
+        from detection import assess_distraction
         features = self._inner.detect(frame)
-        self._store.write(features)
+        extra: dict | None = None
+        if self._thresholds is not None and self._ear is not None:
+            result = assess_distraction(features, self._thresholds, self._ear.threshold)
+            extra = {
+                "reason":     result.reason.value,
+                "reasons":    [r.value for r in result.reasons],
+                "distracted": result.distracted,
+            }
+        self._store.write(features, extra)
+        if self._frames_dir is not None:
+            cv2.imwrite(str(self._frames_dir / f"{self._idx:06d}.jpg"), frame)
+        self._idx += 1
         return features
 
     def close(self) -> None:

@@ -28,7 +28,7 @@ def draw_overlay(
         lines.append("Calibrated: YES")
     lines += [
         f"Focused:  {not result.distracted}",
-        f"Reason:   {result.reason.value}",
+        f"Reason:   {'+'.join(r.value for r in result.reasons) if result.reasons else 'none'}",
         f"Blinks:   {total_blinks}",
     ]
     if f.yaw is not None:
